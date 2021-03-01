@@ -1,0 +1,15 @@
+pandas
+sympy
+numpy
+matplotlib
+antlr4-python3-runtime
+markdown
+pymdown-extensions
+jupyterlab_iframe
+matplotlib-venn
+markdown-editor
+sklearn
+tqdm
+seaborn
+fastapi
+requests
