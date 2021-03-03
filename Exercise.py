@@ -8,21 +8,24 @@ import uuid
 import copy
 import requests
 
+
 class MarkdownBlock:
+
     class __MathTemplate(Template):
-    	delimiter = "@"
+        delimiter = "@"
 
     def __init__(self, md: str, params: dict = {}):
-    	self.md = md
+        self.md = md
         self.params = copy.deepcopy(params)
 
         for key in self.params:
-	try:
-			self.params[key] = sp.latex(self.params[key])
-		except:
-			Exception(f"Object: {self.params[key]}, cannot be converted to latex, provide a SymPy object that can be converted to LaTeX.")
+            try:
+                self.params[key] = sp.latex(self.params[key])
+            except:
+                Exception(
+                    f"Object: {self.params[key]}, cannot be converted to latex, provide a SymPy object that can be converted to LaTeX.")
 
-	#TODO: warning for unused params?
+        # TODO: warning for unused params?
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
@@ -37,6 +40,7 @@ class MarkdownBlock:
             }
         }
         return markdown.markdown(string, extensions=extensions, extension_configs=extension_config)
+
 
 class Exercise:
     """        
@@ -115,6 +119,7 @@ class Exercise:
         with open("../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
             json.dump(exercise, f, ensure_ascii=False, indent=4)
 
+
 class Page:
     def __init__(self, structure: list = []):
         self.structure = structure
@@ -154,5 +159,3 @@ class Page:
             json.dump(article, f, ensure_ascii=False, indent=4)
 
         print("Data written succesfully.")
-
-
