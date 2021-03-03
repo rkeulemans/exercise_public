@@ -108,8 +108,8 @@ class Exercise:
 
         self.data = exercise
 
-        #with open("../../../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
-        #    json.dump(exercise, f, ensure_ascii=False, indent=4)
+        with open("../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
+            json.dump(exercise, f, ensure_ascii=False, indent=4)
 
 class Page:
     def __init__(self, structure: list = []):
@@ -146,7 +146,7 @@ class Page:
             "tuples": tuples
         }
 
-        with open("../../../sympy_api/full_page.json", 'w', encoding='utf-8') as f:
+        with open("../sympy_api/full_page.json", 'w', encoding='utf-8') as f:
             json.dump(article, f, ensure_ascii=False, indent=4)
 
         print("Data written succesfully.")
