@@ -10,15 +10,19 @@ import requests
 
 class MarkdownBlock:
     class __MathTemplate(Template):
-        delimiter = "@"
+    	delimiter = "@"
 
     def __init__(self, md: str, params: dict = {}):
-        self.md = md
+    	self.md = md
         self.params = copy.deepcopy(params)
 
         for key in self.params:
-            self.params[key] = sp.latex(self.params[key])
+	try:
+			self.params[key] = sp.latex(self.params[key])
+		except:
+			Exception(f"Object: {self.params[key]}, cannot be converted to latex, provide a SymPy object that can be converted to LaTeX.")
 
+	#TODO: warning for unused params?
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
