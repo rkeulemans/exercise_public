@@ -36,40 +36,42 @@ import uuid
 import copy
 import requests
 
-&#34;&#34;&#34;A one line summary of the module or program, terminated by a period.
-
-Leave one blank line.  The rest of this docstring should contain an
-overall description of the module or program.  Optionally, it may also
-contain a brief description of exported classes and functions and/or usage
-examples.
-
-  Typical usage example:
-
-  foo = ClassFoo()
-  bar = foo.FunctionBar()
-&#34;&#34;&#34;
 
 class MarkdownBlock:
-    &#34;&#34;&#34;Encapsulates a markdown string&#34;&#34;&#34;
+    &#34;&#34;&#34;Encapsulates a Markdown string
+
+    The Markdown string can contain parameters using the `@param` notation.
+    A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+
+    Attributes:
+        md: A (parameterized) Markdown string.
+        params: A dictionary containing the substitutions. 
+    &#34;&#34;&#34;
 
     class __MathTemplate(Template):
         delimiter = &#34;@&#34;
 
     def __init__(self, md: str, params: dict = {}):
-        &#34;&#34;&#34;
-
-        &#34;&#34;&#34;
+        &#34;&#34;&#34;Inits MarkdownBlock class with a markdown string and a dictionary with substitutions if used&#34;&#34;&#34;
         self.md = md
         self.params = copy.deepcopy(params)
 
         for key in self.params:
             self.params[key] = sp.latex(self.params[key])
 
-        # TODO: warning for unused params?
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
     def to_html(self, string):
+        &#34;&#34;&#34;&#34;Converts a Markdown string to html,
+        given the fixed configuration defined below.
+        Should not be required in typical use-cases,
+        can be used for debugging purposes.
+
+        Attributes:
+            string: A Markdown string.
+        &#34;&#34;&#34;
+
         # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
         extensions = [&#39;pymdownx.arithmatex&#39;, &#39;pymdownx.b64&#39;, &#39;toc&#39;]
         extension_config = {
@@ -83,13 +85,14 @@ class MarkdownBlock:
 
 
 class Exercise:
-    &#34;&#34;&#34;        
-    Contains exercise markup and answers 
+    &#34;&#34;&#34;Contains logic and data defining an exercise.
 
-    :param md: this is the first param
+    Attributes:
+        md: A string containing Markdown or a MarkdownBlock object
     &#34;&#34;&#34;
 
     def __init__(self, md):
+        &#34;&#34;&#34;Inits Exercise class with a string containing Markdown or a MarkdownBlock&#34;&#34;&#34;
         self.html = self.__markup_to_html(md)
         self.answers = {}
         self.default_feedback = &#34;Incorrect, no specific feedback provided matching your answer&#34;
@@ -106,15 +109,20 @@ class Exercise:
                 &#34;Supplied input markup must be either a string or MarkdownBlock&#34;)
 
     def add_default_feedback(self, feedback):
+        &#34;&#34;&#34;Sets default feedback shown to the user when a wrong answer is supplied not matching any answer rule
+
+        Attributes:
+            feedback: A string containing Markdown or a MarkdownBlock object
+        &#34;&#34;&#34;
         self.default_feedback = self.__markup_to_html(feedback)
 
     def add_answer(self, expression, correct: bool, feedback):
-        &#34;&#34;&#34;        
-        Add an answer to match the student answer against 
+        &#34;&#34;&#34;Add an answer to match the student answer against 
 
-        :param expression: sympy expression (object) of answer to match against 
-        :param correct: indicates whether the answer is correct
-        :param feedback: feedback shown to user when answer matches
+        Attributes:
+            expression: SymPy object expression of the answer
+            correct: boolean indicating whether the answer is correct or not 
+            feedback: A string containing Markdown or a MarkdownBlock object
         &#34;&#34;&#34;
         feedback = self.__markup_to_html(feedback)
         latex_answer_string = sp.latex(expression)
@@ -125,19 +133,35 @@ class Exercise:
         }
         self.answers[latex_answer_string] = answer
 
-    def evaluate(self, expression):
+    def __evaluate(self, expression):
         for _, answer in self.answers.items():
             if sp.simplify(process_sympy(answer[&#34;expression&#34;])) == sp.simplify(expression):
                 return answer
         return {&#34;expression&#34;: None, &#34;correct&#34;: False, &#34;feedback&#34;: self.default_feedback}
 
     def evaluate_answer(self, expression):
-        return display(HTML(self.evaluate(expression)[&#34;feedback&#34;]))
+        &#34;&#34;&#34;Evaluates given expression against existing answers and displays the feedback for that answer
+
+        Attributes:  
+            expression: SymPy object expression of the answer
+        &#34;&#34;&#34;
+        return display(HTML(self.__evaluate(expression)[&#34;feedback&#34;]))
 
     def display(self):
+        &#34;&#34;&#34;Show rendered exercise content in jupyter-notebook&#34;&#34;&#34;
         display(HTML(self.html))
 
     def publish(self, url):
+        &#34;&#34;&#34;Publishes the exercise at the provided url so it can be &#39;played&#39;
+
+        Note: exercises should be written by calling e.write() prior to publishing!
+
+        Attributes:
+            url: the url to publish the exercise
+        &#34;&#34;&#34;
+        if self.data == None:
+            Exception(
+                &#34;Write the exercise by callin `e.write()` prior to calling `e.publish()`&#34;)
         j = self.data
         r = requests.post(url, json=self.data)
         if (r.status_code == 200):
@@ -161,6 +185,8 @@ class Exercise:
 
 
 class Page:
+    &#34;&#34;&#34;Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks&#34;&#34;&#34;
+
     def __init__(self, structure: list = []):
         self.structure = structure
 
@@ -215,20 +241,26 @@ class Page:
 <span>(</span><span>md)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Contains exercise markup and answers </p>
-<p>:param md: this is the first param</p></div>
+<div class="desc"><p>Contains logic and data defining an exercise.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>md</code></strong></dt>
+<dd>A string containing Markdown or a MarkdownBlock object</dd>
+</dl>
+<p>Inits Exercise class with a string containing Markdown or a MarkdownBlock</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Exercise:
-    &#34;&#34;&#34;        
-    Contains exercise markup and answers 
+    &#34;&#34;&#34;Contains logic and data defining an exercise.
 
-    :param md: this is the first param
+    Attributes:
+        md: A string containing Markdown or a MarkdownBlock object
     &#34;&#34;&#34;
 
     def __init__(self, md):
+        &#34;&#34;&#34;Inits Exercise class with a string containing Markdown or a MarkdownBlock&#34;&#34;&#34;
         self.html = self.__markup_to_html(md)
         self.answers = {}
         self.default_feedback = &#34;Incorrect, no specific feedback provided matching your answer&#34;
@@ -245,15 +277,20 @@ class Page:
                 &#34;Supplied input markup must be either a string or MarkdownBlock&#34;)
 
     def add_default_feedback(self, feedback):
+        &#34;&#34;&#34;Sets default feedback shown to the user when a wrong answer is supplied not matching any answer rule
+
+        Attributes:
+            feedback: A string containing Markdown or a MarkdownBlock object
+        &#34;&#34;&#34;
         self.default_feedback = self.__markup_to_html(feedback)
 
     def add_answer(self, expression, correct: bool, feedback):
-        &#34;&#34;&#34;        
-        Add an answer to match the student answer against 
+        &#34;&#34;&#34;Add an answer to match the student answer against 
 
-        :param expression: sympy expression (object) of answer to match against 
-        :param correct: indicates whether the answer is correct
-        :param feedback: feedback shown to user when answer matches
+        Attributes:
+            expression: SymPy object expression of the answer
+            correct: boolean indicating whether the answer is correct or not 
+            feedback: A string containing Markdown or a MarkdownBlock object
         &#34;&#34;&#34;
         feedback = self.__markup_to_html(feedback)
         latex_answer_string = sp.latex(expression)
@@ -264,19 +301,35 @@ class Page:
         }
         self.answers[latex_answer_string] = answer
 
-    def evaluate(self, expression):
+    def __evaluate(self, expression):
         for _, answer in self.answers.items():
             if sp.simplify(process_sympy(answer[&#34;expression&#34;])) == sp.simplify(expression):
                 return answer
         return {&#34;expression&#34;: None, &#34;correct&#34;: False, &#34;feedback&#34;: self.default_feedback}
 
     def evaluate_answer(self, expression):
-        return display(HTML(self.evaluate(expression)[&#34;feedback&#34;]))
+        &#34;&#34;&#34;Evaluates given expression against existing answers and displays the feedback for that answer
+
+        Attributes:  
+            expression: SymPy object expression of the answer
+        &#34;&#34;&#34;
+        return display(HTML(self.__evaluate(expression)[&#34;feedback&#34;]))
 
     def display(self):
+        &#34;&#34;&#34;Show rendered exercise content in jupyter-notebook&#34;&#34;&#34;
         display(HTML(self.html))
 
     def publish(self, url):
+        &#34;&#34;&#34;Publishes the exercise at the provided url so it can be &#39;played&#39;
+
+        Note: exercises should be written by calling e.write() prior to publishing!
+
+        Attributes:
+            url: the url to publish the exercise
+        &#34;&#34;&#34;
+        if self.data == None:
+            Exception(
+                &#34;Write the exercise by callin `e.write()` prior to calling `e.publish()`&#34;)
         j = self.data
         r = requests.post(url, json=self.data)
         if (r.status_code == 200):
@@ -305,20 +358,26 @@ class Page:
 </code></dt>
 <dd>
 <div class="desc"><p>Add an answer to match the student answer against </p>
-<p>:param expression: sympy expression (object) of answer to match against
-:param correct: indicates whether the answer is correct
-:param feedback: feedback shown to user when answer matches</p></div>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>expression</code></strong></dt>
+<dd>SymPy object expression of the answer</dd>
+<dt><strong><code>correct</code></strong></dt>
+<dd>boolean indicating whether the answer is correct or not </dd>
+<dt><strong><code>feedback</code></strong></dt>
+<dd>A string containing Markdown or a MarkdownBlock object</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_answer(self, expression, correct: bool, feedback):
-    &#34;&#34;&#34;        
-    Add an answer to match the student answer against 
+    &#34;&#34;&#34;Add an answer to match the student answer against 
 
-    :param expression: sympy expression (object) of answer to match against 
-    :param correct: indicates whether the answer is correct
-    :param feedback: feedback shown to user when answer matches
+    Attributes:
+        expression: SymPy object expression of the answer
+        correct: boolean indicating whether the answer is correct or not 
+        feedback: A string containing Markdown or a MarkdownBlock object
     &#34;&#34;&#34;
     feedback = self.__markup_to_html(feedback)
     latex_answer_string = sp.latex(expression)
@@ -334,12 +393,22 @@ class Page:
 <span>def <span class="ident">add_default_feedback</span></span>(<span>self, feedback)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Sets default feedback shown to the user when a wrong answer is supplied not matching any answer rule</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>feedback</code></strong></dt>
+<dd>A string containing Markdown or a MarkdownBlock object</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_default_feedback(self, feedback):
+    &#34;&#34;&#34;Sets default feedback shown to the user when a wrong answer is supplied not matching any answer rule
+
+    Attributes:
+        feedback: A string containing Markdown or a MarkdownBlock object
+    &#34;&#34;&#34;
     self.default_feedback = self.__markup_to_html(feedback)</code></pre>
 </details>
 </dd>
@@ -347,54 +416,62 @@ class Page:
 <span>def <span class="ident">display</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Show rendered exercise content in jupyter-notebook</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def display(self):
+    &#34;&#34;&#34;Show rendered exercise content in jupyter-notebook&#34;&#34;&#34;
     display(HTML(self.html))</code></pre>
-</details>
-</dd>
-<dt id="Exercise.Exercise.evaluate"><code class="name flex">
-<span>def <span class="ident">evaluate</span></span>(<span>self, expression)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def evaluate(self, expression):
-    for _, answer in self.answers.items():
-        if sp.simplify(process_sympy(answer[&#34;expression&#34;])) == sp.simplify(expression):
-            return answer
-    return {&#34;expression&#34;: None, &#34;correct&#34;: False, &#34;feedback&#34;: self.default_feedback}</code></pre>
 </details>
 </dd>
 <dt id="Exercise.Exercise.evaluate_answer"><code class="name flex">
 <span>def <span class="ident">evaluate_answer</span></span>(<span>self, expression)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Evaluates given expression against existing answers and displays the feedback for that answer</p>
+<p>Attributes:<br>
+expression: SymPy object expression of the answer</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def evaluate_answer(self, expression):
-    return display(HTML(self.evaluate(expression)[&#34;feedback&#34;]))</code></pre>
+    &#34;&#34;&#34;Evaluates given expression against existing answers and displays the feedback for that answer
+
+    Attributes:  
+        expression: SymPy object expression of the answer
+    &#34;&#34;&#34;
+    return display(HTML(self.__evaluate(expression)[&#34;feedback&#34;]))</code></pre>
 </details>
 </dd>
 <dt id="Exercise.Exercise.publish"><code class="name flex">
 <span>def <span class="ident">publish</span></span>(<span>self, url)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Publishes the exercise at the provided url so it can be 'played'</p>
+<p>Note: exercises should be written by calling e.write() prior to publishing!</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>url</code></strong></dt>
+<dd>the url to publish the exercise</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def publish(self, url):
+    &#34;&#34;&#34;Publishes the exercise at the provided url so it can be &#39;played&#39;
+
+    Note: exercises should be written by calling e.write() prior to publishing!
+
+    Attributes:
+        url: the url to publish the exercise
+    &#34;&#34;&#34;
+    if self.data == None:
+        Exception(
+            &#34;Write the exercise by callin `e.write()` prior to calling `e.publish()`&#34;)
     j = self.data
     r = requests.post(url, json=self.data)
     if (r.status_code == 200):
@@ -434,32 +511,56 @@ class Page:
 <span>(</span><span>md: str, params: dict = {})</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Encapsulates a markdown string</p></div>
+<div class="desc"><p>Encapsulates a Markdown string</p>
+<p>The Markdown string can contain parameters using the <code>@param</code> notation.
+A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>md</code></strong></dt>
+<dd>A (parameterized) Markdown string.</dd>
+<dt><strong><code>params</code></strong></dt>
+<dd>A dictionary containing the substitutions. </dd>
+</dl>
+<p>Inits MarkdownBlock class with a markdown string and a dictionary with substitutions if used</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MarkdownBlock:
-    &#34;&#34;&#34;Encapsulates a markdown string&#34;&#34;&#34;
+    &#34;&#34;&#34;Encapsulates a Markdown string
+
+    The Markdown string can contain parameters using the `@param` notation.
+    A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+
+    Attributes:
+        md: A (parameterized) Markdown string.
+        params: A dictionary containing the substitutions. 
+    &#34;&#34;&#34;
 
     class __MathTemplate(Template):
         delimiter = &#34;@&#34;
 
     def __init__(self, md: str, params: dict = {}):
-        &#34;&#34;&#34;
-
-        &#34;&#34;&#34;
+        &#34;&#34;&#34;Inits MarkdownBlock class with a markdown string and a dictionary with substitutions if used&#34;&#34;&#34;
         self.md = md
         self.params = copy.deepcopy(params)
 
         for key in self.params:
             self.params[key] = sp.latex(self.params[key])
 
-        # TODO: warning for unused params?
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
     def to_html(self, string):
+        &#34;&#34;&#34;&#34;Converts a Markdown string to html,
+        given the fixed configuration defined below.
+        Should not be required in typical use-cases,
+        can be used for debugging purposes.
+
+        Attributes:
+            string: A Markdown string.
+        &#34;&#34;&#34;
+
         # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
         extensions = [&#39;pymdownx.arithmatex&#39;, &#39;pymdownx.b64&#39;, &#39;toc&#39;]
         extension_config = {
@@ -477,12 +578,29 @@ class Page:
 <span>def <span class="ident">to_html</span></span>(<span>self, string)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>"Converts a Markdown string to html,
+given the fixed configuration defined below.
+Should not be required in typical use-cases,
+can be used for debugging purposes.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>string</code></strong></dt>
+<dd>A Markdown string.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_html(self, string):
+    &#34;&#34;&#34;&#34;Converts a Markdown string to html,
+    given the fixed configuration defined below.
+    Should not be required in typical use-cases,
+    can be used for debugging purposes.
+
+    Attributes:
+        string: A Markdown string.
+    &#34;&#34;&#34;
+
     # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
     extensions = [&#39;pymdownx.arithmatex&#39;, &#39;pymdownx.b64&#39;, &#39;toc&#39;]
     extension_config = {
@@ -502,12 +620,14 @@ class Page:
 <span>(</span><span>structure: list = [])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Page:
+    &#34;&#34;&#34;Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks&#34;&#34;&#34;
+
     def __init__(self, structure: list = []):
         self.structure = structure
 
@@ -625,7 +745,6 @@ class Page:
 <li><code><a title="Exercise.Exercise.add_answer" href="#Exercise.Exercise.add_answer">add_answer</a></code></li>
 <li><code><a title="Exercise.Exercise.add_default_feedback" href="#Exercise.Exercise.add_default_feedback">add_default_feedback</a></code></li>
 <li><code><a title="Exercise.Exercise.display" href="#Exercise.Exercise.display">display</a></code></li>
-<li><code><a title="Exercise.Exercise.evaluate" href="#Exercise.Exercise.evaluate">evaluate</a></code></li>
 <li><code><a title="Exercise.Exercise.evaluate_answer" href="#Exercise.Exercise.evaluate_answer">evaluate_answer</a></code></li>
 <li><code><a title="Exercise.Exercise.publish" href="#Exercise.Exercise.publish">publish</a></code></li>
 <li><code><a title="Exercise.Exercise.write" href="#Exercise.Exercise.write">write</a></code></li>

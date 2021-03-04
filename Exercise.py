@@ -59,9 +59,6 @@ class MarkdownBlock:
 class Exercise:
     """Contains logic and data defining an exercise.
 
-    The markdown string can contain parameters using the `@param` notation.
-    A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
-
     Attributes:
         md: A string containing Markdown or a MarkdownBlock object
     """
@@ -134,7 +131,7 @@ class Exercise:
         Attributes:
             url: the url to publish the exercise
         """
-        if self.data = None:
+        if self.data == None:
             Exception(
                 "Write the exercise by callin `e.write()` prior to calling `e.publish()`")
         j = self.data
@@ -146,6 +143,7 @@ class Exercise:
             print("Publishing error code: {}".format(r.status_code))
 
     def write(self):
+        """Prepares JSON representation of exercise for network-transport"""
         exercise = {
             "id": self.id,
             "html": self.html,
@@ -155,8 +153,12 @@ class Exercise:
 
         self.data = exercise
 
-        with open("../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
-            json.dump(exercise, f, ensure_ascii=False, indent=4)
+        # Used for local authoring only
+        try:
+            with open("../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
+                json.dump(exercise, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
 
 
 class Page:
