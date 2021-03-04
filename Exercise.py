@@ -10,26 +10,40 @@ import requests
 
 
 class MarkdownBlock:
+    """Encapsulates a Markdown string
+
+    The Markdown string can contain parameters using the `@param` notation.
+    A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+
+    Attributes:
+        md: A (parameterized) Markdown string.
+        params: A dictionary containing the substitutions. 
+    """
 
     class __MathTemplate(Template):
         delimiter = "@"
 
     def __init__(self, md: str, params: dict = {}):
+        """Inits MarkdownBlock class with a markdown string and a dictionary with substitutions if used"""
         self.md = md
         self.params = copy.deepcopy(params)
 
         for key in self.params:
-            try:
-                self.params[key] = sp.latex(self.params[key])
-            except:
-                Exception(
-                    f"Object: {self.params[key]}, cannot be converted to latex, provide a SymPy object that can be converted to LaTeX.")
+            self.params[key] = sp.latex(self.params[key])
 
-        # TODO: warning for unused params?
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
     def to_html(self, string):
+        """"Converts a Markdown string to html,
+        given the fixed configuration defined below.
+        Should not be required in typical use-cases,
+        can be used for debugging purposes.
+
+        Attributes:
+            string: A Markdown string.
+        """
+
         # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
         extensions = ['pymdownx.arithmatex', 'pymdownx.b64', 'toc']
         extension_config = {
@@ -43,13 +57,17 @@ class MarkdownBlock:
 
 
 class Exercise:
-    """        
-    Contains exercise markup and answers 
+    """Contains logic and data defining an exercise.
 
-    :param md: this is the first param
+    The markdown string can contain parameters using the `@param` notation.
+    A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+
+    Attributes:
+        md: A string containing Markdown or a MarkdownBlock object
     """
 
     def __init__(self, md):
+        """Inits Exercise class with a string containing Markdown or a MarkdownBlock"""
         self.html = self.__markup_to_html(md)
         self.answers = {}
         self.default_feedback = "Incorrect, no specific feedback provided matching your answer"
@@ -66,15 +84,20 @@ class Exercise:
                 "Supplied input markup must be either a string or MarkdownBlock")
 
     def add_default_feedback(self, feedback):
+        """Sets default feedback shown to the user when a wrong answer is supplied not matching any answer rule
+
+        Attributes:
+            feedback: A string containing Markdown or a MarkdownBlock object
+        """
         self.default_feedback = self.__markup_to_html(feedback)
 
     def add_answer(self, expression, correct: bool, feedback):
-        """        
-        Add an answer to match the student answer against 
+        """Add an answer to match the student answer against 
 
-        :param expression: sympy expression (object) of answer to match against 
-        :param correct: indicates whether the answer is correct
-        :param feedback: feedback shown to user when answer matches
+        Attributes:
+            expression: SymPy object expression of the answer
+            correct: boolean indicating whether the answer is correct or not 
+            feedback: A string containing Markdown or a MarkdownBlock object
         """
         feedback = self.__markup_to_html(feedback)
         latex_answer_string = sp.latex(expression)
@@ -85,19 +108,35 @@ class Exercise:
         }
         self.answers[latex_answer_string] = answer
 
-    def evaluate(self, expression):
+    def __evaluate(self, expression):
         for _, answer in self.answers.items():
             if sp.simplify(process_sympy(answer["expression"])) == sp.simplify(expression):
                 return answer
         return {"expression": None, "correct": False, "feedback": self.default_feedback}
 
     def evaluate_answer(self, expression):
-        return display(HTML(self.evaluate(expression)["feedback"]))
+        """Evaluates given expression against existing answers and displays the feedback for that answer
+
+        Attributes:  
+            expression: SymPy object expression of the answer
+        """
+        return display(HTML(self.__evaluate(expression)["feedback"]))
 
     def display(self):
+        """Show rendered exercise content in jupyter-notebook"""
         display(HTML(self.html))
 
     def publish(self, url):
+        """Publishes the exercise at the provided url so it can be 'played'
+
+        Note: exercises should be written by calling e.write() prior to publishing!
+
+        Attributes:
+            url: the url to publish the exercise
+        """
+        if self.data = None:
+            Exception(
+                "Write the exercise by callin `e.write()` prior to calling `e.publish()`")
         j = self.data
         r = requests.post(url, json=self.data)
         if (r.status_code == 200):
@@ -121,6 +160,8 @@ class Exercise:
 
 
 class Page:
+    """Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks"""
+
     def __init__(self, structure: list = []):
         self.structure = structure
 
