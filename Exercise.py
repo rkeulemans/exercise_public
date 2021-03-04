@@ -14,6 +14,7 @@ class MarkdownBlock:
 
     The Markdown string can contain parameters using the `@param` notation.
     A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+    A markdown string can contain inline latex by wrapping it in dollar-signs like so: `$1 + 1$`
 
     Attributes:
         md: A (parameterized) Markdown string.
@@ -105,7 +106,8 @@ class Exercise:
         }
         self.answers[latex_answer_string] = answer
 
-    def __evaluate(self, expression):
+    def evaluate(self, expression):
+        """Evaluates expression and matches against all known answers, returns matching answer if exists and default answer otherwise"""
         for _, answer in self.answers.items():
             if sp.simplify(process_sympy(answer["expression"])) == sp.simplify(expression):
                 return answer
@@ -153,7 +155,7 @@ class Exercise:
 
         self.data = exercise
 
-        # Used for local authoring only
+        # Used for local authoring only, avoids having to publish every exercise individually.
         try:
             with open("../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
                 json.dump(exercise, f, ensure_ascii=False, indent=4)

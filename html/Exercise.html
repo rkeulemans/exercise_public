@@ -42,6 +42,7 @@ class MarkdownBlock:
 
     The Markdown string can contain parameters using the `@param` notation.
     A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+    A markdown string can contain inline latex by wrapping it in dollar-signs like so: `$1 + 1$`
 
     Attributes:
         md: A (parameterized) Markdown string.
@@ -171,6 +172,7 @@ class Exercise:
             print(&#34;Publishing error code: {}&#34;.format(r.status_code))
 
     def write(self):
+        &#34;&#34;&#34;Prepares JSON representation of exercise for network-transport&#34;&#34;&#34;
         exercise = {
             &#34;id&#34;: self.id,
             &#34;html&#34;: self.html,
@@ -180,8 +182,12 @@ class Exercise:
 
         self.data = exercise
 
-        with open(&#34;../sympy_api/exercises/{id}&#34;.format(id=self.id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:
-            json.dump(exercise, f, ensure_ascii=False, indent=4)
+        # Used for local authoring only, avoids having to publish every exercise individually.
+        try:
+            with open(&#34;../sympy_api/exercises/{id}&#34;.format(id=self.id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:
+                json.dump(exercise, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
 
 
 class Page:
@@ -339,6 +345,7 @@ class Page:
             print(&#34;Publishing error code: {}&#34;.format(r.status_code))
 
     def write(self):
+        &#34;&#34;&#34;Prepares JSON representation of exercise for network-transport&#34;&#34;&#34;
         exercise = {
             &#34;id&#34;: self.id,
             &#34;html&#34;: self.html,
@@ -348,8 +355,12 @@ class Page:
 
         self.data = exercise
 
-        with open(&#34;../sympy_api/exercises/{id}&#34;.format(id=self.id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:
-            json.dump(exercise, f, ensure_ascii=False, indent=4)</code></pre>
+        # Used for local authoring only, avoids having to publish every exercise individually.
+        try:
+            with open(&#34;../sympy_api/exercises/{id}&#34;.format(id=self.id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:
+                json.dump(exercise, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -485,12 +496,13 @@ expression: SymPy object expression of the answer</p></div>
 <span>def <span class="ident">write</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Prepares JSON representation of exercise for network-transport</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def write(self):
+    &#34;&#34;&#34;Prepares JSON representation of exercise for network-transport&#34;&#34;&#34;
     exercise = {
         &#34;id&#34;: self.id,
         &#34;html&#34;: self.html,
@@ -500,8 +512,12 @@ expression: SymPy object expression of the answer</p></div>
 
     self.data = exercise
 
-    with open(&#34;../sympy_api/exercises/{id}&#34;.format(id=self.id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:
-        json.dump(exercise, f, ensure_ascii=False, indent=4)</code></pre>
+    # Used for local authoring only, avoids having to publish every exercise individually.
+    try:
+        with open(&#34;../sympy_api/exercises/{id}&#34;.format(id=self.id), &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:
+            json.dump(exercise, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass</code></pre>
 </details>
 </dd>
 </dl>
@@ -513,7 +529,8 @@ expression: SymPy object expression of the answer</p></div>
 <dd>
 <div class="desc"><p>Encapsulates a Markdown string</p>
 <p>The Markdown string can contain parameters using the <code>@param</code> notation.
-A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.</p>
+A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+A markdown string can contain inline latex by wrapping it in dollar-signs like so: <code>$1 + 1$</code></p>
 <h2 id="attributes">Attributes</h2>
 <dl>
 <dt><strong><code>md</code></strong></dt>
@@ -531,6 +548,7 @@ A substitution for each parameter should be supplied in a dictionary with keys c
 
     The Markdown string can contain parameters using the `@param` notation.
     A substitution for each parameter should be supplied in a dictionary with keys corresponding to the parameters and values being SymPy objects.
+    A markdown string can contain inline latex by wrapping it in dollar-signs like so: `$1 + 1$`
 
     Attributes:
         md: A (parameterized) Markdown string.
