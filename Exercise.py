@@ -7,6 +7,7 @@ import markdown
 import uuid
 import copy
 import requests
+import pymdownx.arithmatex as arithmatex
 
 
 class MarkdownBlock:
@@ -46,13 +47,14 @@ class MarkdownBlock:
         """
 
         # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
-        extensions = ['pymdownx.arithmatex', 'pymdownx.b64', 'toc']
+        extensions = ['pymdownx.arithmatex',
+                      "pymdownx.inlinehilite", 'pymdownx.b64', 'toc']
         extension_config = {
             "pymdownx.arithmatex": {
                 "generic": True,
                 "tex_inline_wrap": ['$', '$'],
-                "tex_block_wrap": ['[', ']'],
-            }
+                "tex_block_wrap": ['$$', '$$'],
+            },
         }
         return markdown.markdown(string, extensions=extensions, extension_configs=extension_config)
 
