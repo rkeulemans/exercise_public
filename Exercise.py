@@ -119,13 +119,13 @@ class Exercise:
         Attributes:  
             expression: SymPy object expression of the answer
         """
-        return display(HTML(self.__evaluate(expression)["feedback"]))
+        return display(HTML(self.evaluate(expression)["feedback"]))
 
     def display(self):
         """Show rendered exercise content in jupyter-notebook"""
         display(HTML(self.html))
 
-    def publish(self, url):
+    def publish(self, url, token):
         """Publishes the exercise at the provided url so it can be 'played'
 
         Note: exercises should be written by calling e.write() prior to publishing!
@@ -137,7 +137,8 @@ class Exercise:
             Exception(
                 "Write the exercise by callin `e.write()` prior to calling `e.publish()`")
         j = self.data
-        r = requests.post(url, json=self.data)
+        r = requests.post(url, json=self.data, headers={
+                          "Authorization": token})
         if (r.status_code == 200):
             print("Published succesfully, preview at: {}".format(
                 r.json()["url"]))

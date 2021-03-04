@@ -44,3 +44,20 @@ def test_parameterized_exercise_integer_addition():
     assert e.evaluate(ans)["correct"] == True
     # Check if false on faulty answer
     assert e.evaluate(sp.simplify(0))["correct"] == False
+
+
+def test_parameterized_exercise_integer_addition():
+    s = "What is $@a + @b$?"
+    params = {}
+    params["a"] = sp.Matrix([1, 1, 1])
+    params["b"] = sp.Matrix([1, 1, 1])
+
+    ans = params["a"] + params["b"]
+
+    e = Exercise(MarkdownBlock("What is $@a + @b$?", params))
+
+    e.add_answer(ans, True, "Correct!")
+    # Check if the answer is stored correctly
+    assert e.evaluate(ans)["correct"] == True
+    # Check if false on faulty answer
+    assert e.evaluate(sp.simplify(0))["correct"] == False
