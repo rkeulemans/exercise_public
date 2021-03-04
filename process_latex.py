@@ -1,3 +1,4 @@
+# source: https://github.com/grasple/latex2sympy
 import sympy
 import antlr4
 from antlr4.error.ErrorListener import ErrorListener
