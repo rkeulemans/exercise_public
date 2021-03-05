@@ -66,6 +66,10 @@ class Exercise:
         md: A string containing Markdown or a MarkdownBlock object
     """
 
+    # Url and token used for publishing exercises
+    URL = None
+    TOKEN = None
+
     def __init__(self, md):
         """Inits Exercise class with a string containing Markdown or a MarkdownBlock"""
         self.html = self.__markup_to_html(md)
@@ -127,7 +131,7 @@ class Exercise:
         """Show rendered exercise content in jupyter-notebook"""
         display(HTML(self.html))
 
-    def publish(self, url, token):
+    def publish(self):
         """Publishes the exercise at the provided url so it can be 'played'
 
         Note: exercises should be written by calling e.write() prior to publishing!
@@ -139,8 +143,8 @@ class Exercise:
             Exception(
                 "Write the exercise by callin `e.write()` prior to calling `e.publish()`")
         j = self.data
-        r = requests.post(url, json=self.data, headers={
-                          "Authorization": token})
+        r = requests.post(self.URL, json=self.data, headers={
+                          "Authorization": self.TOKEN})
         if (r.status_code == 200):
             print("Published succesfully, preview at: {}".format(
                 r.json()["url"]))
