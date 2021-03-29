@@ -137,7 +137,7 @@ class Exercise:
             "id": self.id,
             "html": self.html,
             "default_feedback": self.default_feedback,
-            "answers": self.answers
+            "answers": list(self.answers.values())
         }
         r = requests.post(self.URL, json=exercise, headers={
                           "Authorization": self.TOKEN})
