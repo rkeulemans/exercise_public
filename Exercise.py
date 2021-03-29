@@ -1,4 +1,4 @@
-from IPython.display import display, Math, Latex, Markdown, HTML
+from IPython.display import display, Math, Latex, Markdown, HTML, IFrame
 import sympy as sp
 from process_latex import process_sympy
 from string import Template
@@ -131,21 +131,18 @@ class Exercise:
         """Show rendered exercise content in jupyter-notebook"""
         display(HTML(self.html))
 
-    def publish(self):
-        """Publishes the exercise at the provided url so it can be 'played'
-
-        Note: exercises should be written by calling e.write() prior to publishing!
-
-        Attributes:
-            url: the url to publish the exercise
-        """
-        if self.data == None:
-            Exception(
-                "Write the exercise by callin `e.write()` prior to calling `e.publish()`")
-        j = self.data
-        r = requests.post(self.URL, json=self.data, headers={
+    def play(self):
+        """Publishes the exercise at the provided url so it can be 'played'"""
+        exercise = {
+            "id": self.id,
+            "html": self.html,
+            "default_feedback": self.default_feedback,
+            "answers": self.answers
+        }
+        r = requests.post(self.URL, json=exercise, headers={
                           "Authorization": self.TOKEN})
         if (r.status_code == 200):
+            display(IFrame(r.json()["url"], width=500, height=250))
             print("Published succesfully, preview at: {}".format(
                 r.json()["url"]))
         else:
@@ -169,7 +166,7 @@ class Exercise:
         except Exception:
             pass
 
-
+        
 class Page:
     """Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks"""
 
