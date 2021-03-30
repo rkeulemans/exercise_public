@@ -8,6 +8,7 @@ import uuid
 import copy
 import requests
 import pymdownx.arithmatex as arithmatex
+from bs4 import BeautifulSoup
 
 
 class MarkdownBlock:
@@ -56,7 +57,16 @@ class MarkdownBlock:
                 "tex_block_wrap": ['$$', '$$'],
             },
         }
-        return markdown.markdown(string, extensions=extensions, extension_configs=extension_config)
+        html = markdown.markdown(string, extensions=extensions, extension_configs=extension_config)
+        # remove <span class="arithmatex"> tags, not required for MathLive
+        # removing ALL <span> currently, bad bad
+        invalid_tags = ['span']
+        soup = BeautifulSoup(html, features="html.parser")
+        for tag in invalid_tags: 
+            for match in soup.findAll(tag):
+                match.unwrap()
+        print(soup)
+        return soup
 
 
 class Exercise:
