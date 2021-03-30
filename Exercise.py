@@ -45,6 +45,7 @@ class MarkdownBlock:
 
         Attributes:
             string: A Markdown string.
+            tex_inline_wrap: The delimiter to wrap latex math content in.
         """
 
         # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
@@ -58,11 +59,10 @@ class MarkdownBlock:
             },
         }
         html = markdown.markdown(string, extensions=extensions, extension_configs=extension_config)
-        # remove <span class="arithmatex"> tags, not required for MathLive
+        # remove <span class="arithmatex"> tags added by the arithmatex extension, not required for MathLive
         soup = BeautifulSoup(html, features="html.parser")
         for match in soup.find_all('span', 'arithmatex'):
             match.unwrap()
-        print(soup)
         return soup
 
 
