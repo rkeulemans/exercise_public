@@ -37,7 +37,7 @@ class MarkdownBlock:
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
-    def to_html(self, string):
+    def to_html(self, string, tex_inline_wrap = "$"):
         """"Converts a Markdown string to html,
         given the fixed configuration defined below.
         Should not be required in typical use-cases,
@@ -53,7 +53,7 @@ class MarkdownBlock:
         extension_config = {
             "pymdownx.arithmatex": {
                 "generic": True,
-                "tex_inline_wrap": ['$', '$'],
+                "tex_inline_wrap": [tex_inline_wrap, tex_inline_wrap],
                 "tex_block_wrap": ['$$', '$$'],
             },
         }
