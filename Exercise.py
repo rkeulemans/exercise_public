@@ -22,6 +22,9 @@ class MarkdownBlock:
         md: A (parameterized) Markdown string.
         params: A dictionary containing the substitutions. 
     """
+    
+    TEX_INLINE_WRAP_LEFT = "$"
+    TEX_INLINE_WRAP_RIGHT = "$"
 
     class __MathTemplate(Template):
         delimiter = "@"
@@ -37,7 +40,7 @@ class MarkdownBlock:
         self.html = self.to_html(
             self.__MathTemplate(md).substitute(self.params))
 
-    def to_html(self, string, tex_inline_wrap = "$"):
+    def to_html(self, string):
         """"Converts a Markdown string to html,
         given the fixed configuration defined below.
         Should not be required in typical use-cases,
@@ -54,7 +57,7 @@ class MarkdownBlock:
         extension_config = {
             "pymdownx.arithmatex": {
                 "generic": True,
-                "tex_inline_wrap": [tex_inline_wrap, tex_inline_wrap],
+                "tex_inline_wrap": [self.TEX_INLINE_WRAP_LEFT, self.TEX_INLINE_WRAP_RIGHT],
                 "tex_block_wrap": ['$$', '$$'],
             },
         }
@@ -63,7 +66,7 @@ class MarkdownBlock:
         soup = BeautifulSoup(html, features="html.parser")
         for match in soup.find_all('span', 'arithmatex'):
             match.unwrap()
-        return soup
+        return str(soup)
 
 
 class Exercise:
@@ -149,7 +152,7 @@ class Exercise:
         r = requests.post(self.URL, json=exercise, headers={
                           "Authorization": self.TOKEN})
         if (r.status_code == 200):
-            display(IFrame(r.json()["url"], width=500, height=250))
+            display(IFrame(r.json()["url"], width=800, height=350))
             print("Published succesfully, preview at: {}".format(
                 r.json()["url"]))
         else:
@@ -161,7 +164,7 @@ class Exercise:
             "id": self.id,
             "html": self.html,
             "default_feedback": self.default_feedback,
-            "answers": self.answers
+            "answers": list(self.answers.values())
         }
 
         self.data = exercise
