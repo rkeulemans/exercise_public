@@ -64,7 +64,7 @@ class MarkdownBlock:
         html = markdown.markdown(string, extensions=extensions, extension_configs=extension_config)
         # remove <span class="arithmatex"> tags added by the arithmatex extension, not required for MathLive
         soup = BeautifulSoup(html, features="html.parser")
-        for match in soup.find_all('span', 'arithmatex'):
+        for match in soup.find_all(['span', 'div'], 'arithmatex'):
             match.unwrap()
         return str(soup)
 
