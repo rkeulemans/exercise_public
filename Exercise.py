@@ -67,7 +67,15 @@ class MarkdownBlock:
         for match in soup.find_all(['span', 'div'], 'arithmatex'):
             match.unwrap()
         return str(soup)
-
+    
+    def write(self, name):
+        # Used for local authoring only, avoids having to publish every exercise individually.
+        id = name.replace(' ', '-').lower()
+        try:
+            with open("../sympy_api/markdowns/{id}".format(id=id), 'w', encoding='utf-8') as f:
+                json.dump({"html": self.html}, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
 
 class Exercise:
     """Contains logic and data defining an exercise.
@@ -158,7 +166,7 @@ class Exercise:
         else:
             print("Publishing error code: {}".format(r.status_code))
 
-    def write(self):
+    def write(self, id = "None"):
         """Prepares JSON representation of exercise for network-transport"""
         exercise = {
             "id": self.id,
@@ -171,11 +179,10 @@ class Exercise:
 
         # Used for local authoring only, avoids having to publish every exercise individually.
         try:
-            with open("../sympy_api/exercises/{id}".format(id=self.id), 'w', encoding='utf-8') as f:
+            with open("../sympy_api/exercises/{id}".format(id=id), 'w', encoding='utf-8') as f:
                 json.dump(exercise, f, ensure_ascii=False, indent=4)
         except Exception:
             pass
-
         
 class Page:
     """Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks"""
