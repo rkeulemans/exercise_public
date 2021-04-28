@@ -160,7 +160,7 @@ class Exercise:
         r = requests.post(self.URL, json=exercise, headers={
                           "Authorization": self.TOKEN})
         if (r.status_code == 200):
-            display(IFrame(r.json()["url"], width=800, height=350))
+            display(IFrame(r.json()["url"], width=500, height=350))
             print("Published succesfully, preview at: {}".format(
                 r.json()["url"]))
         else:
