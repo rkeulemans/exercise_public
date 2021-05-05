@@ -53,7 +53,7 @@ class MarkdownBlock:
 
         # b64 is used for images to avoid static hosting of images on server (so we only need the JSON)
         extensions = ['pymdownx.arithmatex',
-                      "pymdownx.inlinehilite", 'pymdownx.b64', 'toc']
+                      "pymdownx.inlinehilite", 'codehilite', 'fenced_code', 'pymdownx.b64', 'toc']
         extension_config = {
             "pymdownx.arithmatex": {
                 "generic": True,
