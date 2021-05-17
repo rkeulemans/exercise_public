@@ -29,7 +29,7 @@ class MarkdownBlock:
     class __MathTemplate(Template):
         delimiter = "@"
 
-    def __init__(self, md: str, params: dict = {}):
+    def __init__(self, md: str, params: dict = {}, ignore_params = False):
         """Inits MarkdownBlock class with a markdown string and a dictionary with substitutions if used"""
         self.md = md
         self.params = copy.deepcopy(params)
@@ -37,8 +37,11 @@ class MarkdownBlock:
         for key in self.params:
             self.params[key] = sp.latex(self.params[key])
 
-        self.html = self.to_html(
-            self.__MathTemplate(md).substitute(self.params))
+        if ignore_params:
+            self.html = self.to_html(md) 
+        else:
+            self.html = self.to_html(
+                self.__MathTemplate(md).substitute(self.params))
 
     def to_html(self, string):
         """"Converts a Markdown string to html,
@@ -165,17 +168,18 @@ class Exercise:
                 r.json()["url"]))
         else:
             print("Publishing error code: {}".format(r.status_code))
-
-    def write(self, id = "None"):
-        """Prepares JSON representation of exercise for network-transport"""
-        exercise = {
+            
+    def to_json(self):
+        return {
             "id": self.id,
             "html": self.html,
             "default_feedback": self.default_feedback,
             "answers": list(self.answers.values())
         }
 
-        self.data = exercise
+    def write(self, id = "no_title_provided"):
+        """Prepares JSON representation of exercise for network-transport"""
+        self.data = self.to_json()
 
         # Used for local authoring only, avoids having to publish every exercise individually.
         try:
@@ -183,7 +187,20 @@ class Exercise:
                 json.dump(exercise, f, ensure_ascii=False, indent=4)
         except Exception:
             pass
+    
+    @staticmethod
+    def write_multiple(generator, instances_count, id = "no_title_provided"):
+        exercises = []
+        for _ in range(instances_count):
+            exercises.append(generator().to_json())
         
+        # Used for local authoring only, avoids having to publish every exercise individually.
+        try:
+            with open("../sympy_api/exercises/{id}".format(id=id), 'w', encoding='utf-8') as f:
+                json.dump(exercises, f, ensure_ascii=False, indent=4)
+        except Exception:
+            pass
+            
 class Page:
     """Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks"""
 
