@@ -94,6 +94,4 @@ urllib3==1.26.4
 wcwidth==0.2.5
 webencodings==0.5.1
 pytest-cov==2.11.1
-beautifulsoup4==4.9.3 
-cifar10-web==0.0.4
-cPickle
+beautifulsoup4==4.9.3
