@@ -203,6 +203,10 @@ class Exercise:
                 json.dump(exercises, f, ensure_ascii=False, indent=4)
         except Exception:
             pass
+        
+    @staticmethod
+    def play_by_id(id): 
+        display(IFrame(f"https://www.mscthesis.nl/preview?id={id}", width=500, height=350))
             
 class Page:
     """Page class to aid writing complete interactive lecture note pages with embedded exercise-blocks"""
