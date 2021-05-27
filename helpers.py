@@ -11,6 +11,11 @@ def explain_add(a, b):
     return sp.Matrix([[Symbol(f"({latex(u(a[i,j]))} + {latex(u(b[i,j]))})") for j in range(columns)] for i in range(rows)])
 
 def symbolic_matrix(character, rows, columns):
+    # row or column vector
+    if rows == 1:
+        return sp.Matrix([[Symbol(f"{{{character}}}_{{{j+1}}}") for j in range(columns)] for i in range(rows)]) 
+    if columns == 1:
+        return sp.Matrix([[Symbol(f"{{{character}}}_{{{i+1}}}") for j in range(columns)] for i in range(rows)]) 
     return sp.Matrix([[Symbol(f"{{{character}}}_{{{i+1}, {j+1}}}") for j in range(columns)] for i in range(rows)])
 
 def explain_multiply(a, b):
