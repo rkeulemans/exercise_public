@@ -96,3 +96,4 @@ webencodings==0.5.1
 pytest-cov==2.11.1
 beautifulsoup4==4.9.3
 emnist==0.0
+cifar10==1.0.0
