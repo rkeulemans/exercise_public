@@ -187,7 +187,7 @@ class Exercise:
         # Used for local authoring only, avoids having to publish every exercise individually.
         try:
             with open("../sympy_api/exercises/{id}".format(id=id), 'w', encoding='utf-8') as f:
-                json.dump(exercise, f, ensure_ascii=False, indent=4)
+                json.dump(self.data, f, ensure_ascii=False, indent=4)
         except Exception:
             pass
     
